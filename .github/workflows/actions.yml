@@ -43,8 +43,7 @@ jobs:
           architecture: 'x64'
       - name: Install requirements
         run: pip install -r requirements.txt
-      - run: pip install -r app/requirements.txt
-      - run: mypy app/
+      - run: mypy api/
   Tests:
     runs-on: ubuntu-latest
     steps:
@@ -63,7 +62,7 @@ jobs:
       - name: Test Docker Start
         run: curl http://127.0.0.1:8000
       -
-        run: curl http://localhost:8000/unique_notes
+        run: curl http://localhost:8000/
       - uses: actions/setup-python@v2
         with:
           python-version: '3.12'

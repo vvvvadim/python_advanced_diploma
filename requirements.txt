@@ -26,7 +26,8 @@ faker==22.5.1
 python-dotenv==1.0.1
 
 # Для CORS
-cors==1.0.1 aiofiles==23.2.1
+cors==1.0.1
+aiofiles==23.2.1
 aiosqlite==0.21.0
 alembic==1.13.1
 annotated-types==0.7.0
