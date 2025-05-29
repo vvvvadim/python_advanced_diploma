@@ -1,0 +1,74 @@
+services:
+  postgres:
+    container_name: postgres_container
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: "postgres"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "postgres -U postgres -d postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
+    networks:
+      - project_network
+
+  api:
+    container_name: api
+    build:
+      context: ./api/.
+      dockerfile: Dockerfile
+    env_file:
+      - api/.env
+    command: fastapi run
+    volumes:
+      - media:/media
+    depends_on:
+      - postgres
+    networks:
+      - project_network
+    ports:
+      - 8000:8000
+  server:
+    container_name: nginx
+    build:
+      context: ./server-nginx/.
+      dockerfile: Dockerfile
+    volumes:
+      - media:/usr/share/nginx/html/static/images
+      - ./server-nginx/static/:/usr/share/nginx/html/static
+    depends_on:
+      - postgres
+      - api
+    networks:
+      - project_network
+    ports:
+      - 80:80
+
+volumes:
+  postgres-db:
+    driver_opts:
+      type: none
+      device: ./db
+      o: bind
+  media:
+    driver_opts:
+      type: none
+      device: ./media
+      o: bind
+
+networks:
+  project_network:
+    driver: bridge
