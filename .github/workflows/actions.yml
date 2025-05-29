@@ -1,0 +1,76 @@
+name: Run tests on any Push event
+on:
+  push:
+    branches:
+      - '*'
+jobs:
+  LintsBlack:
+    runs-on: ubuntu-latest
+    name: Black
+    steps:
+      - uses: actions/checkout@v1
+      - uses: psf/black@stable
+        with:
+          options: "--check --verbose"
+          src: "./api"
+  LintsFlake8:
+    runs-on: ubuntu-latest
+    name: Flake8
+    steps:
+      - uses: actions/checkout@v1
+      - uses: py-actions/flake8@v2
+        with:
+          path: "./api"
+          args: "--statistics --count --ignore E501"
+  LintsIsort:
+    runs-on: ubuntu-latest
+    name: Isort
+    steps:
+      - uses: actions/checkout@v1
+      - uses: isort/isort-action@master
+        with:
+          sort-paths: "./api"
+  LintsMyPy:
+    runs-on: ubuntu-latest
+    name: MyPy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+          architecture: 'x64'
+      - name: Install requirements
+        run: pip install -r requirements.txt
+      - run: pip install -r app/requirements.txt
+      - run: mypy app/
+  Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Run Docker Compose
+        run: docker compose -f docker-compose.yaml up -d
+      - name: Check Docker container
+        run: sleep 3
+      -
+        run: docker ps -a
+      -
+        run: docker compose logs
+      - name: Test Docker Start
+        run: curl http://127.0.0.1:8000
+      -
+        run: curl http://localhost:8000/unique_notes
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+          architecture: 'x64'
+      - name: Install requirements
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: coverage run -m pytest tests/test_api.py
+      - name: Tests report
+        run: coverage report
