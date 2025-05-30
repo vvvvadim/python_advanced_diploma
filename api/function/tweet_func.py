@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import Dict, List
 
 from fastapi import Depends, HTTPException, status
 from sqlalchemy import delete, select
@@ -18,8 +18,12 @@ async def get_tweet_func(
     session: AsyncSession = Depends(get_async_session),
 ) -> List[Tweets]:
     """Получение твитов пользователя и его подписок"""
-    following_ids = [following.id for following in user.following]
-    following_ids.append(user.id)
+    if user.following is None:
+        following_ids = list()
+        following_ids.append(user.id)
+    else:
+        following_ids = [following.id for following in user.following]
+        following_ids.append(user.id)
 
     author = aliased(User, name="author")
     liker = aliased(User, name="liker")
@@ -77,7 +81,7 @@ async def post_tweet_func(
     tweet_post: TweetPost,
     user: UserSCH = Depends(get_user_by_token),
     session: AsyncSession = Depends(get_async_session),
-) -> dict:
+) -> Dict:
     """Создание нового твита"""
     tweet = Tweet(content=tweet_post.tweet_data, author_id=user.id)
     session.add(tweet)
@@ -105,7 +109,7 @@ async def delete_tweet(
     tweet_id: int,
     current_user: UserSCH = Depends(get_user_by_token),
     session: AsyncSession = Depends(get_async_session),
-) -> dict:
+) -> Dict:
     """Зависимость для проверки владения твитом"""
     query = (
         select(Tweet)
@@ -132,7 +136,7 @@ async def set_like_tweet(
     tweet_id: int,
     user: UserSCH = Depends(get_user_by_token),
     session: AsyncSession = Depends(get_async_session),
-) -> dict:
+) -> Dict:
     """Поставить лайк твиту"""
     # Проверяем существование твита
     result = await session.execute(select(Tweet).where(Tweet.id == tweet_id))
@@ -158,7 +162,7 @@ async def del_like_tweet(
     tweet_id: int,
     user: UserSCH = Depends(get_user_by_token),
     session: AsyncSession = Depends(get_async_session),
-) -> dict:
+) -> Dict:
     """Удалить лайк с твита"""
     result = await session.execute(
         delete(Like)

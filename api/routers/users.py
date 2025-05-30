@@ -1,3 +1,5 @@
+from typing import Dict
+
 from fastapi import APIRouter, Depends, status
 
 from api.config.models import User
@@ -19,7 +21,7 @@ user_router = APIRouter(tags=["Работа с пользователями"])
     description="Получение информации о своём профиле",
     name="Получение информации о своём профиле по API-ключу",
 )
-async def get_users_me(current_user: User = Depends(get_user_by_token)):
+async def get_users_me(current_user: User = Depends(get_user_by_token)) -> Dict:
     return {"result": True, "user": current_user}
 
 
@@ -30,7 +32,7 @@ async def get_users_me(current_user: User = Depends(get_user_by_token)):
     name="Получение информации о произвольном профиле по его id",
     description="Получение информации о произвольном профиле по его id",
 )
-async def get_users(current_user: User = Depends(get_user_by_id)):
+async def get_users(current_user: User = Depends(get_user_by_id)) -> Dict:
     return {"result": True, "user": current_user}
 
 
@@ -41,7 +43,7 @@ async def get_users(current_user: User = Depends(get_user_by_id)):
     name="Подписка на пользователя",
     description="Подписка на пользователя по его id",
 )
-async def follow_users(result: MSG = Depends(user_follow)):
+async def follow_users(result: MSG = Depends(user_follow)) -> MSG:
     return result
 
 
@@ -52,5 +54,5 @@ async def follow_users(result: MSG = Depends(user_follow)):
     name="Отписка от пользователя",
     description="Отписка от пользователя по его id",
 )
-async def unfollow_users(result: MSG = Depends(user_unfollow)):
+async def unfollow_users(result: MSG = Depends(user_unfollow)) -> MSG:
     return result

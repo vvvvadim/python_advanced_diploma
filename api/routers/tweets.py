@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from fastapi import APIRouter, Depends, status
 
@@ -22,7 +22,7 @@ tweets_router = APIRouter(tags=["Работа с твитами"])
     name="Получение ленты с твитами",
     description="Получение ленты с твитами пользователя по API-ключу",
 )
-async def get_tweet(tweets: List[Tweet] = Depends(get_tweet_func)):
+async def get_tweet(tweets: List[Tweet] = Depends(get_tweet_func)) -> Dict:
     return {"result": "true", "tweets": tweets}
 
 
@@ -33,7 +33,7 @@ async def get_tweet(tweets: List[Tweet] = Depends(get_tweet_func)):
     name="Создание твита",
     description="Создание твита по API-ключу",
 )
-async def post_tweet(result: dict = Depends(post_tweet_func)):
+async def post_tweet(result: dict = Depends(post_tweet_func)) -> Dict:
     return result
 
 
@@ -44,7 +44,7 @@ async def post_tweet(result: dict = Depends(post_tweet_func)):
     name="Удаление твита",
     description="Удаление твита по id и API-ключу",
 )
-async def delete_tweets(result: MSG = Depends(delete_tweet)):
+async def delete_tweets(result: MSG = Depends(delete_tweet)) -> MSG:
     return result
 
 
@@ -55,7 +55,7 @@ async def delete_tweets(result: MSG = Depends(delete_tweet)):
     name="Установка отметки «Нравится» на твит",
     description="Установка отметки «Нравится» на твит по id твита и API-ключу",
 )
-async def post_like_tweet(result: MSG = Depends(set_like_tweet)):
+async def post_like_tweet(result: MSG = Depends(set_like_tweet)) -> MSG:
     return result
 
 
@@ -66,5 +66,5 @@ async def post_like_tweet(result: MSG = Depends(set_like_tweet)):
     name="Удаление отметки «Нравится» с твита",
     description="Удаление отметки «Нравится» с твита по id твита и API-ключу",
 )
-async def delete_like_tweet(result: MSG = Depends(del_like_tweet)):
+async def delete_like_tweet(result: MSG = Depends(del_like_tweet)) -> MSG:
     return result

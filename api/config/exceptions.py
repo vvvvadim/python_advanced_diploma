@@ -12,14 +12,17 @@ class Error_DB(Exception):
     def __init__(self, message: str, code: int = 400):
         self.message = message
         self.code = code
+        super().__init__(message)
 
 
-async def custom_exception_handler(request: Request, exc: Error_DB):
+async def custom_exception_handler(request: Request, exc: Error_DB) -> JSONResponse:
     error_schema = ErrorMSG(error_type=responses[exc.code], error_message=exc.message)
     return JSONResponse(status_code=exc.code, content=error_schema.model_dump())
 
 
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
     error_type = "ValidationError"
     error_schema = ErrorMSG(error_type=error_type, error_message=repr(exc))
     return JSONResponse(
@@ -30,7 +33,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 async def response_validation_exception_handler(
     request: Request, exc: ResponseValidationError
-):
+) -> JSONResponse:
     error_type = "ResponseValidationError"
     error_schema = ErrorMSG(error_type=error_type, error_message=repr(exc.errors()))
     return JSONResponse(
@@ -39,7 +42,9 @@ async def response_validation_exception_handler(
     )
 
 
-async def all_http_exception_handler(request: Request, exc: StarletteHTTPException):
+async def all_http_exception_handler(
+    request: Request, exc: StarletteHTTPException
+) -> JSONResponse:
     error_schema = ErrorMSG(
         error_type=responses[exc.status_code], error_message=exc.detail
     )

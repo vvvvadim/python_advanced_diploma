@@ -38,15 +38,6 @@ jobs:
 
       - name: Run isort
         run: isort --profile=black --check-only ./api
-#  LintsIsort:
-#    runs-on: ubuntu-latest
-#    name: Isort
-#    steps:
-#      - uses: actions/checkout@v1
-#      - uses: isort/isort-action@master
-#        with:
-#          args: "--profile=black"
-#          sort-paths: "./api"
   LintsMyPy:
     runs-on: ubuntu-latest
     name: MyPy
@@ -60,7 +51,12 @@ jobs:
           architecture: 'x64'
       - name: Install requirements
         run: pip install -r requirements.txt
-      - run: mypy api/
+      - run: |
+         mypy --config-file mypy.ini \
+         --show-error-codes \
+         --no-error-summary \
+          api/
+#      - run: mypy api/
   Tests:
     runs-on: ubuntu-latest
     steps:

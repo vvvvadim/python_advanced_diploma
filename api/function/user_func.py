@@ -1,3 +1,5 @@
+from typing import Dict
+
 from fastapi import Depends, HTTPException, status
 from sqlalchemy import delete, select
 from sqlalchemy.dialects.mysql import insert
@@ -52,7 +54,7 @@ async def user_follow(
     user_id: int,
     follower: User = Depends(get_user_by_token),
     session: AsyncSession = Depends(get_async_session),
-) -> dict:
+) -> Dict:
     """Подписка на пользователя"""
     if await check_user_follow(
         session=session, follower_id=follower.id, following_id=user_id
@@ -73,7 +75,7 @@ async def user_unfollow(
     user_id: int,
     follower: User = Depends(get_user_by_token),
     session: AsyncSession = Depends(get_async_session),
-) -> dict:
+) -> Dict:
     """Отписка от пользователя"""
     if not await check_user_follow(
         session=session, follower_id=follower.id, following_id=user_id

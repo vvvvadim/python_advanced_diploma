@@ -51,3 +51,6 @@ TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 
 # Создаем папку для медиафайлов, если она не существует
 os.makedirs(MEDIA_FOLDER, exist_ok=True)
+
+
+print(settings.DB_HOST)
