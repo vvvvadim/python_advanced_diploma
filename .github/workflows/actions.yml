@@ -64,6 +64,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+      - name: Create temp Directory
+        run: mkdir db
       - name: Run Docker Compose
         run: docker compose -f docker-compose.yaml up -d
       - name: Check Docker container
