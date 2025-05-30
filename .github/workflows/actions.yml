@@ -29,8 +29,8 @@ jobs:
       - uses: actions/checkout@v1
       - uses: isort/isort-action@master
         with:
+          options: "--profile=black"
           sort-paths: "./api"
-          args: "--profile=black"
   LintsMyPy:
     runs-on: ubuntu-latest
     name: MyPy
