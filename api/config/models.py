@@ -1,7 +1,6 @@
 from typing import List
 
-from sqlalchemy import (TIMESTAMP, Column, ForeignKey, Integer, String, Table,
-                        func)
+from sqlalchemy import TIMESTAMP, Column, ForeignKey, Integer, String, Table, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from api.database.database import Base, uniq_str_an

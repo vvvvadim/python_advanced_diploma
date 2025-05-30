@@ -4,9 +4,13 @@ from fastapi import APIRouter, Depends, status
 
 from api.config.models import Tweet
 from api.config.schemas import MSG, GetTweet, TweetResp
-from api.function.tweet_func import (del_like_tweet, delete_tweet,
-                                     get_tweet_func, post_tweet_func,
-                                     set_like_tweet)
+from api.function.tweet_func import (
+    del_like_tweet,
+    delete_tweet,
+    get_tweet_func,
+    post_tweet_func,
+    set_like_tweet,
+)
 
 tweets_router = APIRouter(tags=["Работа с твитами"])
 

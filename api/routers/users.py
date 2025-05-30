@@ -2,8 +2,12 @@ from fastapi import APIRouter, Depends, status
 
 from api.config.models import User
 from api.config.schemas import MSG, GetUser
-from api.function.user_func import (get_user_by_id, get_user_by_token,
-                                    user_follow, user_unfollow)
+from api.function.user_func import (
+    get_user_by_id,
+    get_user_by_token,
+    user_follow,
+    user_unfollow,
+)
 
 user_router = APIRouter(tags=["Работа с пользователями"])
 

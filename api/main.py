@@ -4,10 +4,13 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from starlette.exceptions import HTTPException
 
-from api.config.exceptions import (Error_DB, all_http_exception_handler,
-                                   custom_exception_handler,
-                                   response_validation_exception_handler,
-                                   validation_exception_handler)
+from api.config.exceptions import (
+    Error_DB,
+    all_http_exception_handler,
+    custom_exception_handler,
+    response_validation_exception_handler,
+    validation_exception_handler,
+)
 from api.database.database import Base, engine
 from api.routers import media, tweets, users
 

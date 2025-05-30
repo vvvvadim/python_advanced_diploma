@@ -30,6 +30,7 @@ jobs:
       - uses: isort/isort-action@master
         with:
           sort-paths: "./api"
+          args: "--profile=black"
   LintsMyPy:
     runs-on: ubuntu-latest
     name: MyPy
