@@ -1,7 +1,8 @@
 import os
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from fastapi.security import APIKeyHeader
 from pathlib import Path
+
+from fastapi.security import APIKeyHeader
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -16,8 +17,10 @@ class Settings(BaseSettings):
     )
 
     def get_db_url(self):
-        return (f"postgresql+asyncpg://{self.DB_USERNAME}:{self.DB_PASSWORD}@"
-                f"{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}")
+        return (
+            f"postgresql+asyncpg://{self.DB_USERNAME}:{self.DB_PASSWORD}@"
+            f"{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        )
 
 
 class TestSettings(BaseSettings):
@@ -28,8 +31,10 @@ class TestSettings(BaseSettings):
     DB_NAME: str = "twitter_test"
 
     def get_db_url(self):
-        return (f"postgresql+asyncpg://{self.DB_USERNAME}:{self.DB_PASSWORD}@"
-                f"{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}")
+        return (
+            f"postgresql+asyncpg://{self.DB_USERNAME}:{self.DB_PASSWORD}@"
+            f"{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        )
 
 
 settings = Settings()

@@ -1,4 +1,4 @@
-from fastapi import HTTPException,status
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.config.models import Media
@@ -17,5 +17,5 @@ async def post_media(file: str, session: AsyncSession) -> dict:
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Ошибка при сохранении файла: {str(e)}"
+            detail=f"Ошибка при сохранении файла: {str(e)}",
         )

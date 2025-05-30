@@ -1,22 +1,20 @@
 from datetime import datetime
-from typing import AsyncGenerator, Annotated
+from typing import Annotated, AsyncGenerator
+
 from sqlalchemy import func
-from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column
-from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import (AsyncAttrs, AsyncSession,
+                                    async_sessionmaker, create_async_engine)
+from sqlalchemy.orm import (DeclarativeBase, Mapped, declared_attr,
+                            mapped_column)
 
 from api.config.config import settings
 from api.config.exceptions import Error_DB
-
 
 DATABASE_URL = settings.get_db_url()
 
 # Создаем асинхронный движок для работы с базой данных
 engine = create_async_engine(
-    DATABASE_URL,
-    echo=True,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20
+    DATABASE_URL, echo=True, pool_pre_ping=True, pool_size=10, max_overflow=20
 )
 
 # Создаем фабрику сессий для взаимодействия с базой данных
@@ -25,7 +23,7 @@ async_session_maker = async_sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
     autocommit=False,
-    autoflush=False
+    autoflush=False,
 )
 
 
@@ -44,14 +42,18 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 
 # Базовый класс для всех моделей
 class Base(AsyncAttrs, DeclarativeBase):
-    __abstract__ = True  # Класс абстрактный, чтобы не создавать отдельную таблицу для него
+    __abstract__ = (
+        True  # Класс абстрактный, чтобы не создавать отдельную таблицу для него
+    )
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), onupdate=func.now()
+    )
 
     @declared_attr.directive
     def __tablename__(cls) -> str:
-        return cls.__name__.lower() + 's'
+        return cls.__name__.lower() + "s"
 
 
 uniq_str_an = Annotated[str, mapped_column(unique=True, nullable=False)]

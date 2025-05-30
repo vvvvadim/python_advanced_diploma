@@ -1,13 +1,16 @@
-from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from starlette.exceptions import HTTPException
+
+from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
-from api.config.exceptions import (all_http_exception_handler,
-                               response_validation_exception_handler,
-                               validation_exception_handler,
-                                   Error_DB,custom_exception_handler)
-from api.routers import users, tweets, media
-from api.database.database import engine, Base
+from starlette.exceptions import HTTPException
+
+from api.config.exceptions import (Error_DB, all_http_exception_handler,
+                                   custom_exception_handler,
+                                   response_validation_exception_handler,
+                                   validation_exception_handler)
+from api.database.database import Base, engine
+from api.routers import media, tweets, users
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -17,6 +20,7 @@ async def lifespan(app: FastAPI):
     yield
     await engine.dispose()
     print("Работа приложения завершена")
+
 
 app = FastAPI(lifespan=lifespan, debug=True)
 

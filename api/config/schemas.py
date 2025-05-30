@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, PrivateAttr, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, PrivateAttr
 
 
 class Follow(BaseModel):
@@ -63,10 +64,12 @@ class Likes(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class Media(BaseModel):
-    link : str
+    link: str
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class TweetAuthor(BaseModel):
     id: int
