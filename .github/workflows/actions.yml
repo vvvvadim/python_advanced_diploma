@@ -25,7 +25,22 @@ jobs:
   LintsIsort:
     runs-on: ubuntu-latest
     name: Isort
-    run: isort --profile black api/
+    steps:
+      - uses: actions/checkout@v4  # ✅ Актуальная версия
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"  # или ваша версия Python
+
+      - name: Install isort
+        run: pip install isort
+
+      - name: Run isort
+        run: isort --profile=black --check-only ./api
+#  LintsIsort:
+#    runs-on: ubuntu-latest
+#    name: Isort
 #    steps:
 #      - uses: actions/checkout@v1
 #      - uses: isort/isort-action@master
