@@ -25,12 +25,13 @@ jobs:
   LintsIsort:
     runs-on: ubuntu-latest
     name: Isort
-    steps:
-      - uses: actions/checkout@v1
-      - uses: isort/isort-action@master
-        with:
-          options: "--profile=black"
-          sort-paths: "./api"
+    run: isort --profile black api/
+#    steps:
+#      - uses: actions/checkout@v1
+#      - uses: isort/isort-action@master
+#        with:
+#          args: "--profile=black"
+#          sort-paths: "./api"
   LintsMyPy:
     runs-on: ubuntu-latest
     name: MyPy
