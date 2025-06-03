@@ -1,10 +1,12 @@
+from typing import Dict
+
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.config.models import Media
 
 
-async def post_media(file: str, session: AsyncSession) -> dict:
+async def post_media(file: str, session: AsyncSession) -> Dict:
     """Сохранение медиафайла"""
     try:
         # Создаем запись в базе данных

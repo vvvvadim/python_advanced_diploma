@@ -56,7 +56,6 @@ jobs:
          --show-error-codes \
          --no-error-summary \
           api/
-#      - run: mypy api/
   Tests:
     runs-on: ubuntu-latest
     steps:
@@ -64,10 +63,9 @@ jobs:
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      - name: Create temp Directory
-        run: mkdir db
       - name: Run Docker Compose
-        run: docker compose -f docker-compose.yaml up -d
+        working-directory: ./db-test
+        run: docker compose -f db-test/docker-compose.yaml up -d
       - name: Check Docker container
         run: sleep 3
       -
@@ -75,9 +73,6 @@ jobs:
       -
         run: docker compose logs
       - name: Test Docker Start
-        run: curl http://127.0.0.1:8000
-      -
-        run: curl http://localhost:8000/
       - uses: actions/setup-python@v2
         with:
           python-version: '3.12'

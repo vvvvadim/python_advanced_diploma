@@ -1,90 +1,86 @@
+from collections.abc import AsyncGenerator
+from typing import Dict, Mapping
+
 import pytest
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import select
-from fastapi.testclient import TestClient
-
 from api.database.database import Base, get_async_session
-from api.config.models import User
-from api.config.config import TEST_DATABASE_URL
+from fastapi import FastAPI
+from httpx import AsyncClient
+from api.config.config import settings
 from api.main import app
-
-# Создаем асинхронный движок для тестовой базы данных
-engine = create_async_engine(TEST_DATABASE_URL, echo=True)
-
-# Создаем фабрику сессий
-async_session = sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
+from api.config.models import User
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
 )
 
-@pytest_asyncio.fixture(scope="function")
-async def setup_database():
-    """Create a fresh database for each test."""
+DB_USERNAME = "test"
+DB_PASSWORD = "test"
+DB_HOST = "localhost"
+DB_PORT = "5432"
+DB_NAME = "test_db"
+
+TEST_USERNAME = "Test"
+TEST_API_KEY = "test"
+TEST_SERVER_PORT = 8000
+
+unauthorized_structure_response: Dict = {
+    "result": False,
+    "error_type": "Unauthorized",
+    "error_message": "Неверный API ключ",
+}
+
+
+@pytest_asyncio.fixture()
+async def db_session() -> AsyncGenerator[AsyncSession, None]:
+    DATABASE_URL = f"postgresql+asyncpg://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    engine = create_async_engine(DATABASE_URL, echo=True)
+    async_session = async_sessionmaker(engine, expire_on_commit=False)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
-    
     async with async_session() as session:
-        # Создаем тестового пользователя
-        user = User(
-            name="Test User",
-            api_key="test"
-        )
-        session.add(user)
-        
-        # Создаем второго тестового пользователя
-        user2 = User(
-            name="Test User 2",
-            api_key="test2"
-        )
-        session.add(user2)
-        
-        await session.commit()
-        await session.refresh(user)
-        await session.refresh(user2)
-        print(f"Created test user with id: {user.id}, api_key: {user.api_key}")
-        print(f"Created test user 2 with id: {user2.id}, api_key: {user2.api_key}")
-    
-    yield
-    
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-    await engine.dispose()
-
-@pytest_asyncio.fixture(scope="function")
-async def session(setup_database) -> AsyncSession:
-    """Create a fresh database session for each test."""
-    async with async_session() as session:
+        test_user = User(api_key=TEST_API_KEY, name=TEST_USERNAME)
+        session.add(test_user)
+        fake_users = [
+            User(api_key=f"fake_api_key{i}", name=f"fake_user{i}")
+            for i in range(1, 6)
+        ]
+        session.add_all(fake_users)
         yield session
-        await session.rollback()
         await session.close()
 
-@pytest_asyncio.fixture(scope="function")
-async def test_user(session: AsyncSession) -> User:
-    """Get the test user."""
-    result = await session.execute(select(User).where(User.api_key == "test"))
-    user = result.scalar_one_or_none()
-    if user:
-        print(f"Found test user with id: {user.id}, api_key: {user.api_key}")
-    else:
-        print("Test user not found!")
-    return user
 
-@pytest_asyncio.fixture(scope="function")
-async def test_user2(session: AsyncSession) -> User:
-    """Get the second test user."""
-    result = await session.execute(select(User).where(User.api_key == "test2"))
-    user = result.scalar_one_or_none()
-    if user:
-        print(f"Found test user 2 with id: {user.id}, api_key: {user.api_key}")
-    else:
-        print("Test user 2 not found!")
-    return user
+@pytest.fixture()
+def test_app(db_session: AsyncSession) -> FastAPI:
+    """Create a test app with overridden dependencies."""
+    app.dependency_overrides[get_async_session] = lambda: db_session
+    return app
 
-@pytest.fixture(scope="function")
-def client(session: AsyncSession):
-    """Create a test client that uses the test database."""
-    app.dependency_overrides = {}  # Сбрасываем все переопределения зависимостей
-    app.dependency_overrides[get_async_session] = lambda: session
-    return TestClient(app) 
+
+@pytest_asyncio.fixture()
+async def client(test_app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
+    """Create a http client."""
+    test_headers: Mapping[str, str] = {"api-key": "unauthorized"}
+    if TEST_API_KEY is not None:
+        test_headers = {"api-key": TEST_API_KEY}
+    async with AsyncClient(
+        app=test_app,
+        base_url=f"http://localhost:{TEST_SERVER_PORT}/api",
+        headers=test_headers,
+    ) as client:
+        yield client
+
+
+@pytest_asyncio.fixture()
+async def invalid_client(
+    test_app: FastAPI,
+) -> AsyncGenerator[AsyncClient, None]:
+    test_headers: Mapping[str, str] = {"api-key": "unauthorized"}
+    async with AsyncClient(
+        app=test_app,
+        base_url=f"http://localhost:{TEST_SERVER_PORT}/api",
+        headers=test_headers,
+    ) as client:
+        yield client

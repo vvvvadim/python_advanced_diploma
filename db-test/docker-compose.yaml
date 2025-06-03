@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:13.3
+    environment:
+      POSTGRES_DB: "test_db"
+      POSTGRES_USER: "test"
+      POSTGRES_PASSWORD: "test"
+      POSTGRES_HOST_AUTH_METHOD: trust
+    command: >
+      postgres
+      -c log_statement=all
+      -c log_destination=stderr
+      -c log_line_prefix='%m [%p] %q%u@%d '
+      -c log_connections=on
+      -c log_disconnections=on
+      -c log_min_duration_statement=0
+    ports:
+      - "5432:5432"

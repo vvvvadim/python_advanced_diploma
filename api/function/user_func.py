@@ -45,7 +45,7 @@ async def get_user_by_id(
 
     if user is None:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Пользователь не найден"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Пользователь не найден"
         )
     return user
 
@@ -55,20 +55,28 @@ async def user_follow(
     follower: User = Depends(get_user_by_token),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict:
-    """Подписка на пользователя"""
-    if await check_user_follow(
-        session=session, follower_id=follower.id, following_id=user_id
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Вы уже подписаны на этого пользователя",
-        )
+    if await get_user_by_id(user_id=user_id, session=session) is not None:
+        """Подписка на пользователя"""
+        if await check_user_follow(
+            session=session, follower_id=follower.id, following_id=user_id
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Вы уже подписаны на этого пользователя",
+            )
+        else:
+            await session.execute(
+                insert(follower_tbl).values(
+                    follower_id=follower.id, following_id=user_id
+                )
+            )
+            await session.commit()
+            return {"result": "true"}
     else:
-        await session.execute(
-            insert(follower_tbl).values(follower_id=follower.id, following_id=user_id)
+        raise HTTPException(
+            status_code=status.HTTP_404_BAD_REQUEST,
+            detail="Пользователь не найден",
         )
-        await session.commit()
-        return {"result": "true"}
 
 
 async def user_unfollow(
