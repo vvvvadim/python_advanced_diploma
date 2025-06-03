@@ -63,6 +63,12 @@ jobs:
   Tests:
     runs-on: ubuntu-latest
     needs: [LintsBlack, LintsFlake8, LintsIsort, LintsMyPy]
+    env:
+      DB_USERNAME: test
+      DB_PASSWORD: test
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: test_db
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

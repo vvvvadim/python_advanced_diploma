@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import (
 DB_USERNAME = "test"
 DB_PASSWORD = "test"
 DB_HOST = "localhost"
-DB_PORT = "5432"
+DB_PORT = 5432
 DB_NAME = "test_db"
 
 TEST_USERNAME = "Test"
