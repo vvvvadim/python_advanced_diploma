@@ -94,7 +94,7 @@ jobs:
         working-directory: ./api
         run: |
           pip install -r requirements.txt
-          pip install coverage pytest
+          pip install coverage pytest pytest_asyncio
 
       - name: Run tests
         run: coverage run -m pytest tests/test_api.py
