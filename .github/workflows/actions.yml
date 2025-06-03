@@ -61,25 +61,34 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+
       - name: Run Docker Compose
         working-directory: ./db-test
-        run: docker compose -f db-test/docker-compose.yaml up -d
-      - name: Check Docker container
+        run: docker compose -f docker-compose.yaml up -d
+
+      - name: Wait for containers
         run: sleep 3
-      -
+
+      - name: Check running containers
         run: docker ps -a
-      -
+
+      - name: View Docker logs
         run: docker compose logs
-      - name: Test Docker Start
+
+      - name: Set up Python
       - uses: actions/setup-python@v2
         with:
           python-version: '3.12'
           architecture: 'x64'
+
       - name: Install requirements
         run: pip install -r requirements.txt
+
       - name: Run tests
         run: coverage run -m pytest tests/test_api.py
+
       - name: Tests report
         run: coverage report
