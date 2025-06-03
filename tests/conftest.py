@@ -6,7 +6,6 @@ import pytest_asyncio
 from api.database.database import Base, get_async_session
 from fastapi import FastAPI
 from httpx import AsyncClient
-from api.config.config import settings
 from api.main import app
 from api.config.models import User
 from sqlalchemy.ext.asyncio import (
