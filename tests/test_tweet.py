@@ -70,6 +70,7 @@ class TestTweetAPI:
             assert isinstance(tweet["author"]["name"], str)
             assert isinstance(tweet["content"], str)
             assert isinstance(tweet["id"], int)
+            assert isinstance(tweet["likes"], list)
 
     @pytest.mark.asyncio
     async def test_delete_tweet_alien_id(self, client: AsyncClient):
