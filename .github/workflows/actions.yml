@@ -103,7 +103,7 @@ jobs:
           pip install coverage pytest pytest_asyncio
 
       - name: Run tests
-        run: coverage run -m pytest tests/test_api.py
+        run: coverage run -m pytest
 
       - name: Generate coverage report
         run: coverage report
