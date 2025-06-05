@@ -1,5 +1,6 @@
 import pytest
 from httpx import AsyncClient
+from jsonschema import validate
 
 from tests.conftest import unauthorized_structure_response
 
@@ -15,14 +16,25 @@ class TestTweetAPI:
             "tweet_media_ids": [],
         }
         cls.expected_response = {"result": True}
-        cls.tweet_response = {
-            "result": True,
-            "tweet_id" : int
-        }
         cls.error_response = {
             "result": False,
             "error_type": "Bad Request",
             "error_message": "",
+        }
+        cls.tweet_get = {
+            "result": True,
+            "tweets" : [
+                {
+                    "attachments": list,
+                    "author":{
+                        "id": int,
+                        "name": str,
+                    },
+                    "content" : str,
+                    "id": int,
+                    "likes": list,
+                 },
+            ]
         }
 
     @pytest.mark.asyncio
@@ -41,15 +53,23 @@ class TestTweetAPI:
             assert response.json()["result"] == True
 
     @pytest.mark.asyncio
-    async def test_delete_tweet(self, client: AsyncClient):
+    async def test_get_tweet(self, client: AsyncClient):
         if (
-            hasattr(self, "base_url")
+            hasattr(self, "likes_url")
         ):
-            response = await client.delete(
-                self.base_url+"/1"
-            )
+            response = await client.get(
+                self.base_url
+                            )
             assert response.status_code == 200
-            assert response.json() == self.expected_response
+            assert isinstance(response.json()["result"], bool)
+            assert isinstance(response.json()["tweets"], list)
+
+            tweet = response.json()["tweets"][0]
+            assert isinstance(tweet["attachments"], list)
+            assert isinstance(tweet["author"]["id"], int)
+            assert isinstance(tweet["author"]["name"], str)
+            assert isinstance(tweet["content"], str)
+            assert isinstance(tweet["id"], int)
 
     @pytest.mark.asyncio
     async def test_delete_tweet_alien_id(self, client: AsyncClient):
@@ -124,3 +144,14 @@ class TestTweetAPI:
             self.error_response["error_type"] = "Internal Server Error"
             assert response.status_code == 500
             assert response.json() == self.error_response
+
+    @pytest.mark.asyncio
+    async def test_delete_tweet(self, client: AsyncClient):
+        if (
+            hasattr(self, "base_url")
+        ):
+            response = await client.delete(
+                self.base_url+"/1"
+            )
+            assert response.status_code == 200
+            assert response.json() == self.expected_response
