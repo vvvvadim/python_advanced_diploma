@@ -1,8 +1,6 @@
 import pytest
 from httpx import AsyncClient
-from jsonschema import validate
-
-from tests.conftest import unauthorized_structure_response
+from api.config.schemas import GetTweet, ErrorMSG,MSG, TweetResp
 
 
 class TestTweetAPI:
@@ -21,21 +19,6 @@ class TestTweetAPI:
             "error_type": "Bad Request",
             "error_message": "",
         }
-        cls.tweet_get = {
-            "result": True,
-            "tweets" : [
-                {
-                    "attachments": list,
-                    "author":{
-                        "id": int,
-                        "name": str,
-                    },
-                    "content" : str,
-                    "id": int,
-                    "likes": list,
-                 },
-            ]
-        }
 
     @pytest.mark.asyncio
     async def test_create_tweet(self, client: AsyncClient):
@@ -51,6 +34,7 @@ class TestTweetAPI:
             assert response.status_code == 200
             assert isinstance(response.json()["tweet_id"], int)
             assert response.json()["result"] == True
+            assert TweetResp(**response.json())
 
     @pytest.mark.asyncio
     async def test_get_tweet(self, client: AsyncClient):
@@ -61,16 +45,7 @@ class TestTweetAPI:
                 self.base_url
                             )
             assert response.status_code == 200
-            assert isinstance(response.json()["result"], bool)
-            assert isinstance(response.json()["tweets"], list)
-
-            tweet = response.json()["tweets"][0]
-            assert isinstance(tweet["attachments"], list)
-            assert isinstance(tweet["author"]["id"], int)
-            assert isinstance(tweet["author"]["name"], str)
-            assert isinstance(tweet["content"], str)
-            assert isinstance(tweet["id"], int)
-            assert isinstance(tweet["likes"], list)
+            assert GetTweet(**response.json())
 
     @pytest.mark.asyncio
     async def test_delete_tweet_alien_id(self, client: AsyncClient):
@@ -84,6 +59,7 @@ class TestTweetAPI:
             self.error_response["error_type"] = "Forbidden"
             assert response.status_code == 403
             assert response.json() == self.error_response
+            assert ErrorMSG(**response.json())
 
     @pytest.mark.asyncio
     async def test_delete_tweet_wrong_id(self, client: AsyncClient):
@@ -97,6 +73,7 @@ class TestTweetAPI:
             self.error_response["error_type"] = "Forbidden"
             assert response.status_code == 403
             assert response.json() == self.error_response
+            assert ErrorMSG(**response.json())
 
     @pytest.mark.asyncio
     async def test_post_like_tweet(self, client: AsyncClient):
@@ -108,6 +85,7 @@ class TestTweetAPI:
                             )
             assert response.status_code == 200
             assert response.json() == self.expected_response
+            assert MSG(**response.json())
 
     @pytest.mark.asyncio
     async def test_delete_like_tweet(self, client: AsyncClient):
@@ -119,6 +97,7 @@ class TestTweetAPI:
                             )
             assert response.status_code == 200
             assert response.json() == self.expected_response
+            assert MSG(**response.json())
 
     @pytest.mark.asyncio
     async def test_delete_like_tweet_wrong_id(self, client: AsyncClient):
@@ -132,6 +111,7 @@ class TestTweetAPI:
             self.error_response["error_type"] = "Internal Server Error"
             assert response.status_code == 500
             assert response.json() == self.error_response
+            assert ErrorMSG(**response.json())
 
     @pytest.mark.asyncio
     async def test_post_like_tweet_wrong_id(self, client: AsyncClient):
@@ -145,6 +125,7 @@ class TestTweetAPI:
             self.error_response["error_type"] = "Internal Server Error"
             assert response.status_code == 500
             assert response.json() == self.error_response
+            assert ErrorMSG(**response.json())
 
     @pytest.mark.asyncio
     async def test_delete_tweet(self, client: AsyncClient):
@@ -156,3 +137,4 @@ class TestTweetAPI:
             )
             assert response.status_code == 200
             assert response.json() == self.expected_response
+            assert MSG(**response.json())
