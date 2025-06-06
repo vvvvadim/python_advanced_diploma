@@ -93,3 +93,9 @@ class GetTweet(BaseModel):
     tweets: List[Tweets]
 
     model_config = ConfigDict(from_attributes=True)
+
+class PostMedia(BaseModel):
+    result: bool
+    media_id : int
+
+    model_config = ConfigDict(from_attributes=True)
