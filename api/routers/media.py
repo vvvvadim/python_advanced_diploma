@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.config.config import MEDIA_FOLDER
+from api.config.schemas import PostMedia
 from api.database.database import get_async_session
 from api.function.media_func import post_media
-from api.config.schemas import PostMedia
 
 media_router = APIRouter(tags=["Работа с медиаданными"])
 
