@@ -86,9 +86,7 @@ async def post_tweet_func(
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict:
     """Создание нового твита"""
-    logger.info(
-        f"Вношу информацию в БД о создании твита пользователем с id: {user.id}"
-    )
+    logger.info(f"Вношу информацию в БД о создании твита пользователем с id: {user.id}")
     tweet = Tweet(content=tweet_post.tweet_data, author_id=user.id)
     session.add(tweet)
     await session.flush()
