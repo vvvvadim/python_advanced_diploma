@@ -6,7 +6,7 @@ from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from api.config.config import API_KEY_HEADER
+from api.config.config import API_KEY_HEADER, logger
 from api.config.models import User, follower_tbl
 from api.database.database import get_async_session
 
@@ -15,6 +15,7 @@ async def get_user_by_token(
     token: str = Depends(API_KEY_HEADER),
     session: AsyncSession = Depends(get_async_session),
 ) -> User:
+    logger.info("Формирую запрос информации к БД о пользователе по api ключу")
     """Зависимость для получения текущего пользователя по API ключу"""
     query = (
         select(User)
@@ -25,6 +26,7 @@ async def get_user_by_token(
     user = result.scalar_one_or_none()
 
     if not user:
+        logger.info("Неверный API ключ")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный API ключ"
         )
@@ -35,6 +37,7 @@ async def get_user_by_id(
     user_id: int, session: AsyncSession = Depends(get_async_session)
 ) -> User:
     """Получение пользователя по ID или токену"""
+    logger.info("Формирую запрос информации к БД о пользователе по id")
     query = (
         select(User)
         .where(User.id == user_id)
@@ -44,6 +47,7 @@ async def get_user_by_id(
     user = result.scalar_one_or_none()
 
     if user is None:
+        logger.error("Пользователь не найден")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Пользователь не найден"
         )
@@ -55,11 +59,15 @@ async def user_follow(
     follower: User = Depends(get_user_by_token),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict:
+    logger.info(
+        f"Попытка пользователя с id:{follower.id} подписаться на пользователя с id:{user_id}"
+    )
     if await get_user_by_id(user_id=user_id, session=session) is not None:
         """Подписка на пользователя"""
         if await check_user_follow(
             session=session, follower_id=follower.id, following_id=user_id
         ):
+            logger.error("Вы уже подписаны на этого пользователя")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Вы уже подписаны на этого пользователя",
@@ -73,6 +81,7 @@ async def user_follow(
             await session.commit()
             return {"result": "true"}
     else:
+        logger.error("Пользователь не найден")
         raise HTTPException(
             status_code=status.HTTP_404_BAD_REQUEST,
             detail="Пользователь не найден",
@@ -85,9 +94,13 @@ async def user_unfollow(
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict:
     """Отписка от пользователя"""
+    logger.info(
+        f"Попытка пользователя с id:{follower.id} отписаться от пользователя с id:{user_id}"
+    )
     if not await check_user_follow(
         session=session, follower_id=follower.id, following_id=user_id
     ):
+        logger.error("Вы не подписаны на этого пользователя")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Вы не подписаны на этого пользователя",
@@ -109,7 +122,11 @@ async def check_user_follow(
     session: AsyncSession = Depends(get_async_session),
 ) -> bool:
     """Проверка подписки на пользователя"""
+    logger.info(
+        f"Запуск проверки подписки пользователя с id:{follower_id} на пользователя с id:{following_id}"
+    )
     if follower_id == following_id:
+        logger.error("Нельзя подписаться на самого себя")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Нельзя подписаться на самого себя",

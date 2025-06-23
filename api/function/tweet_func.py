@@ -6,7 +6,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased, selectinload
 
-from api.config.config import MEDIA_FOLDER
+from api.config.config import MEDIA_FOLDER, logger
 from api.config.models import Like, Media, Tweet, User
 from api.config.schemas import TweetPost, Tweets, UserSCH
 from api.database.database import get_async_session
@@ -18,6 +18,9 @@ async def get_tweet_func(
     session: AsyncSession = Depends(get_async_session),
 ) -> List[Tweets]:
     """Получение твитов пользователя и его подписок"""
+    logger.info(
+        f"Формирую запрос информации к БД о твитах пользователе с api ключом: {user.api_key}"
+    )
     if user.following is None:
         following_ids = list()
         following_ids.append(user.id)
@@ -83,6 +86,9 @@ async def post_tweet_func(
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict:
     """Создание нового твита"""
+    logger.info(
+        f"Вношу информацию в БД о создании твита пользователем с api ключом: {user.api_key}"
+    )
     tweet = Tweet(content=tweet_post.tweet_data, author_id=user.id)
     session.add(tweet)
     await session.flush()
@@ -95,6 +101,7 @@ async def post_tweet_func(
         media_files = result.scalars().all()
 
         if len(media_files) != len(tweet_post.tweet_media_ids):
+            logger.info("Некоторые медиафайлы не найдены")
             raise HTTPException(
                 status_code=500, detail="Некоторые медиафайлы не найдены"
             )
@@ -111,6 +118,9 @@ async def delete_tweet(
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict:
     """Зависимость для проверки владения твитом"""
+    logger.info(
+        f"Начинаю попытку удаления твита с id:{tweet_id} пользователем с api ключом: {current_user.api_key}"
+    )
     query = (
         select(Tweet)
         .where(Tweet.id == tweet_id, Tweet.author_id == current_user.id)
@@ -120,6 +130,7 @@ async def delete_tweet(
     tweet = result.scalar_one_or_none()
 
     if not tweet:
+        logger.error("У пользователя нет прав на выполнение этой операции")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="У вас нет прав на выполнение этой операции",
@@ -138,11 +149,15 @@ async def set_like_tweet(
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict:
     """Поставить лайк твиту"""
+    logger.info(
+        f"Начинаю попытку установки лайка на  твит с id:{tweet_id} пользователем с api ключом: {user.api_key}"
+    )
     # Проверяем существование твита
     result = await session.execute(select(Tweet).where(Tweet.id == tweet_id))
     tweet = result.scalar_one_or_none()
 
     if tweet is None:
+        logger.error("Твит не найден")
         raise HTTPException(status_code=500, detail="Твит не найден")
 
     # Проверяем, не стоит ли уже лайк
@@ -150,6 +165,7 @@ async def set_like_tweet(
         select(Like).where(Like.tweet_id == tweet_id).where(Like.user_id == user.id)
     )
     if result.scalar_one_or_none() is not None:
+        logger.error("Данный пользователь уже поставили лайк этому твиту")
         raise HTTPException(status_code=500, detail="Вы уже поставили лайк этому твиту")
 
     # Создаем новый лайк
@@ -164,6 +180,9 @@ async def del_like_tweet(
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict:
     """Удалить лайк с твита"""
+    logger.info(
+        f"Начинаю попытку удаления лайка с твита с id:{tweet_id} пользователем с api ключом: {user.api_key}"
+    )
     result = await session.execute(
         delete(Like)
         .where(Like.tweet_id == tweet_id)
@@ -171,6 +190,7 @@ async def del_like_tweet(
         .returning(Like.id)
     )
     if result.scalar_one_or_none() is None:
+        logger.error("Лайк не найден")
         raise HTTPException(status_code=500, detail="Лайк не найден")
 
     return {"result": "true"}

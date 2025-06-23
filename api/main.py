@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from starlette.exceptions import HTTPException
 
+from api.config.config import logger
 from api.config.exceptions import (
     Error_DB,
     all_http_exception_handler,
@@ -12,17 +13,18 @@ from api.config.exceptions import (
     validation_exception_handler,
 )
 from api.database.database import Base, engine
-from api.routers import media, tweets, users
+from api.routers import main, media, tweets, users
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    print("База готова")
+    logger.info("База готова")
+    logger.info("Приложение запущено")
     yield
     await engine.dispose()
-    print("Работа приложения завершена")
+    logger.info("Работа приложения завершена")
 
 
 app = FastAPI(lifespan=lifespan, debug=True)
@@ -37,3 +39,4 @@ app.add_exception_handler(
 app.include_router(users.user_router)
 app.include_router(tweets.tweets_router)
 app.include_router(media.media_router)
+app.include_router(main.main_router)

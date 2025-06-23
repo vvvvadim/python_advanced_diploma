@@ -1,3 +1,4 @@
+import logging
 import os
 
 from fastapi.security import APIKeyHeader
@@ -22,8 +23,47 @@ class Settings(BaseSettings):
         )
 
 
+def setup_logger():
+    logger = logging.getLogger("TWITTER-BACKEND")
+    logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    return logger
+
+
+logger = setup_logger()
+
 settings = Settings()
 
 API_KEY_HEADER = APIKeyHeader(name="api-key")
 
 MEDIA_FOLDER = os.path.join("/media")
+
+
+# logger = logging.getLogger(__name__)
+#
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+# )
+#
+#
+# def create_route_logger(route_name: str):
+#     def get_route_logger():
+#         logger = logging.getLogger(f"app.{route_name}")
+#
+#         class RouteFilter(logging.Filter):
+#             def filter(self, record):
+#                 record.route = route_name
+#                 return True
+#
+#         if not any(isinstance(f, RouteFilter) for f in logger.filters):
+#             logger.addFilter(RouteFilter())
+#
+#         return logger
+#
+#     return get_route_logger

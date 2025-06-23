@@ -2,6 +2,7 @@ from typing import Dict, List
 
 from fastapi import APIRouter, Depends, status
 
+from api.config.config import logger
 from api.config.models import Tweet
 from api.config.schemas import MSG, GetTweet, TweetResp
 from api.function.tweet_func import (
@@ -23,6 +24,7 @@ tweets_router = APIRouter(tags=["Работа с твитами"])
     description="Получение ленты с твитами пользователя по API-ключу",
 )
 async def get_tweet(tweets: List[Tweet] = Depends(get_tweet_func)) -> Dict:
+    logger.info("Запрос на получение ленты с твитами выполнен")
     return {"result": "true", "tweets": tweets}
 
 
@@ -34,6 +36,7 @@ async def get_tweet(tweets: List[Tweet] = Depends(get_tweet_func)) -> Dict:
     description="Создание твита по API-ключу",
 )
 async def post_tweet(result: dict = Depends(post_tweet_func)) -> Dict:
+    logger.info("Запрос на создание твита выполнен")
     return result
 
 
@@ -45,6 +48,7 @@ async def post_tweet(result: dict = Depends(post_tweet_func)) -> Dict:
     description="Удаление твита по id и API-ключу",
 )
 async def delete_tweets(result: MSG = Depends(delete_tweet)) -> MSG:
+    logger.info("Запрос на удаление твита выполнен")
     return result
 
 
@@ -56,6 +60,7 @@ async def delete_tweets(result: MSG = Depends(delete_tweet)) -> MSG:
     description="Установка отметки «Нравится» на твит по id твита и API-ключу",
 )
 async def post_like_tweet(result: MSG = Depends(set_like_tweet)) -> MSG:
+    logger.info("Запрос на установку лайка для твита выполнен")
     return result
 
 
@@ -67,4 +72,5 @@ async def post_like_tweet(result: MSG = Depends(set_like_tweet)) -> MSG:
     description="Удаление отметки «Нравится» с твита по id твита и API-ключу",
 )
 async def delete_like_tweet(result: MSG = Depends(del_like_tweet)) -> MSG:
+    logger.info("Запрос на удаление лайка с твита выполнен")
     return result

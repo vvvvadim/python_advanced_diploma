@@ -2,6 +2,7 @@ from typing import Dict
 
 from fastapi import APIRouter, Depends, status
 
+from api.config.config import logger
 from api.config.models import User
 from api.config.schemas import MSG, GetUser
 from api.function.user_func import (
@@ -22,6 +23,7 @@ user_router = APIRouter(tags=["Работа с пользователями"])
     name="Получение информации о своём профиле по API-ключу",
 )
 async def get_users_me(current_user: User = Depends(get_user_by_token)) -> Dict:
+    logger.info("Запрос информации о пользователе по api ключу выполнен")
     return {"result": True, "user": current_user}
 
 
@@ -33,6 +35,7 @@ async def get_users_me(current_user: User = Depends(get_user_by_token)) -> Dict:
     description="Получение информации о произвольном профиле по его id",
 )
 async def get_users(current_user: User = Depends(get_user_by_id)) -> Dict:
+    logger.info("Запрос информации о пользователе по id выполнен")
     return {"result": True, "user": current_user}
 
 
@@ -44,6 +47,7 @@ async def get_users(current_user: User = Depends(get_user_by_id)) -> Dict:
     description="Подписка на пользователя по его id",
 )
 async def follow_users(result: MSG = Depends(user_follow)) -> MSG:
+    logger.info("Подписка на пользователя по id выполнена")
     return result
 
 
@@ -55,4 +59,5 @@ async def follow_users(result: MSG = Depends(user_follow)) -> MSG:
     description="Отписка от пользователя по его id",
 )
 async def unfollow_users(result: MSG = Depends(user_unfollow)) -> MSG:
+    logger.info("Отписка от пользователя по id выполнена")
     return result

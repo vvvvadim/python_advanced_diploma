@@ -5,7 +5,7 @@ import aiofiles
 from fastapi import APIRouter, Depends, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.config.config import MEDIA_FOLDER
+from api.config.config import MEDIA_FOLDER, logger
 from api.config.schemas import PostMedia
 from api.database.database import get_async_session
 from api.function.media_func import post_media
@@ -30,4 +30,5 @@ async def upload_file(
     async with aiofiles.open(path1, mode="wb") as f:
         await f.write(contents)
         await file.close()
+    logger.info("Запрос на загрузку медиафайла выполнен")
     return await post_media(file=file.filename, session=session)
