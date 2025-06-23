@@ -19,7 +19,7 @@ async def get_tweet_func(
 ) -> List[Tweets]:
     """Получение твитов пользователя и его подписок"""
     logger.info(
-        f"Формирую запрос информации к БД о твитах пользователе с api ключом: {user._api_key}"
+        f"Формирую запрос информации к БД о твитах пользователе с id: {user.id}"
     )
     if user.following is None:
         following_ids = list()
@@ -87,7 +87,7 @@ async def post_tweet_func(
 ) -> Dict:
     """Создание нового твита"""
     logger.info(
-        f"Вношу информацию в БД о создании твита пользователем с api ключом: {user._api_key}"
+        f"Вношу информацию в БД о создании твита пользователем с id: {user.id}"
     )
     tweet = Tweet(content=tweet_post.tweet_data, author_id=user.id)
     session.add(tweet)
@@ -119,7 +119,7 @@ async def delete_tweet(
 ) -> Dict:
     """Зависимость для проверки владения твитом"""
     logger.info(
-        f"Начинаю попытку удаления твита с id:{tweet_id} пользователем с api ключом: {current_user._api_key}"
+        f"Начинаю попытку удаления твита с id:{tweet_id} пользователем с id: {current_user.id}"
     )
     query = (
         select(Tweet)
@@ -150,7 +150,7 @@ async def set_like_tweet(
 ) -> Dict:
     """Поставить лайк твиту"""
     logger.info(
-        f"Начинаю попытку установки лайка на  твит с id:{tweet_id} пользователем с api ключом: {user._api_key}"
+        f"Начинаю попытку установки лайка на  твит с id:{tweet_id} пользователем с id: {user.id}"
     )
     # Проверяем существование твита
     result = await session.execute(select(Tweet).where(Tweet.id == tweet_id))
@@ -181,7 +181,7 @@ async def del_like_tweet(
 ) -> Dict:
     """Удалить лайк с твита"""
     logger.info(
-        f"Начинаю попытку удаления лайка с твита с id:{tweet_id} пользователем с api ключом: {user._api_key}"
+        f"Начинаю попытку удаления лайка с твита с id:{tweet_id} пользователем с id: {user.id}"
     )
     result = await session.execute(
         delete(Like)
