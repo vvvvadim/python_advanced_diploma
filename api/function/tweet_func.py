@@ -2,7 +2,7 @@ import os
 from typing import Dict, List
 
 from fastapi import Depends, HTTPException, status
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased, selectinload
 
@@ -40,13 +40,22 @@ async def get_tweet_func(
             Media.link.label("media_link"),
             Like.user_id.label("like_user_id"),
             liker.name.label("like_user_name"),
+            func.count(Like.id).label("likes_count"),
         )
         .join(author, Tweet.author)
-        .outerjoin(Tweet.attachments)
-        .outerjoin(Tweet.likes)
+        .outerjoin(Media)
+        .outerjoin(Like, Tweet.likes)
         .outerjoin(liker, Like.users_lk)
         .filter(Tweet.author_id.in_(following_ids))
-        .order_by(Tweet.created_at.desc())
+        .group_by(
+            Tweet.id,
+            author.id,
+            author.name,
+            Tweet.content,
+            Media.link,
+            Like.user_id,
+            liker.name,
+        )
     )
 
     result = await session.execute(stmt)
@@ -77,7 +86,13 @@ async def get_tweet_func(
                 {"user_id": row.like_user_id, "name": row.like_user_name}
             )
 
-    return list(tweets_dict.values())
+    sorted_dict = dict(
+        sorted(
+            tweets_dict.items(), key=lambda item: len(item[1]["likes"]), reverse=True
+        )
+    )
+
+    return list(sorted_dict.values())
 
 
 async def post_tweet_func(
